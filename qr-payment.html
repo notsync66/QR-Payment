@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>จ่าย QR</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --blue:#1a56db; --blue-dark:#1447b5; --blue-light:#e3ecfc; --blue-text:#1447b5;
+  --green-bg:#EAF3DE; --green-border:#C0DD97; --green-title:#27500A; --green-body:#3B6D11;
+  --red:#e24b4a; --red-bg:#FCEBEB;
+  --bg:#f4f6fb; --card:#ffffff;
+  --border:rgba(0,0,0,0.1); --border-strong:rgba(0,0,0,0.2);
+  --text:#1a1a2e; --text-muted:#6b7280; --text-hint:#9ca3af;
+  --radius:14px; --radius-sm:8px;
+  --nav-h:68px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;display:flex;justify-content:center}
+.app{width:100%;max-width:420px;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative}
+.screen{display:none;flex-direction:column;flex:1;padding-bottom:var(--nav-h)}
+.screen.active{display:flex}
+
+/* TOPBAR */
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 20px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar-logo{width:40px;height:40px;background:var(--blue);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.topbar-title{font-size:20px;font-weight:800;color:var(--text)}
+.topbar-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
+
+/* GLOBAL BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:var(--nav-h);display:grid;grid-template-columns:1fr 1fr;background:var(--card);border-top:1px solid var(--border);z-index:100}
+.bottom-tab{font-family:'Sarabun',sans-serif;font-size:15px;font-weight:700;background:none;border:none;cursor:pointer;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:color 0.15s;position:relative;padding:8px 10px 10px}
+.bottom-tab svg{width:24px;height:24px;stroke-width:1.8}
+.bottom-tab.active{color:var(--blue)}
+.bottom-tab.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:3px;background:var(--blue);border-radius:0 0 4px 4px}
+.nav-badge{position:absolute;top:6px;right:calc(50% - 20px);background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 6px;display:none}
+
+/* SCROLL BODY */
+.scroll-body{flex:1;overflow-y:auto;padding:16px 16px 20px;display:flex;flex-direction:column;gap:14px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+
+/* PHONE NUMPAD INPUT */
+.field-label{font-size:14px;font-weight:700;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
+.phone-display-box{background:var(--bg);border:2px solid var(--border-strong);border-radius:var(--radius-sm);padding:14px 16px;text-align:center;font-size:32px;font-weight:800;color:var(--text);letter-spacing:4px;min-height:64px;display:flex;align-items:center;justify-content:center;transition:border-color 0.15s}
+.phone-display-box.valid{border-color:#22c55e}
+.phone-display-box.invalid{border-color:var(--red)}
+.phone-placeholder{color:var(--text-hint);font-size:22px;letter-spacing:2px}
+.valid-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-bg);color:var(--green-title);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700}
+.invalid-badge{display:inline-flex;align-items:center;gap:5px;background:var(--red-bg);color:var(--red);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700}
+
+/* BUTTONS */
+.btn{width:100%;font-family:'Sarabun',sans-serif;font-size:20px;font-weight:700;padding:18px;border:none;border-radius:var(--radius);cursor:pointer;transition:opacity 0.15s,transform 0.1s}
+.btn:active{transform:scale(0.97)}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:var(--blue-dark)}
+.btn-blue:disabled{background:#b0bfdb;cursor:not-allowed;transform:none}
+.btn-ghost{background:var(--card);color:var(--text);border:1px solid var(--border-strong);font-size:17px;padding:15px}
+.btn-ghost:hover{background:var(--bg)}
+
+/* NUMPAD */
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.num-btn{font-family:'Sarabun',sans-serif;font-size:28px;font-weight:700;padding:18px 10px;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;text-align:center;user-select:none;transition:background 0.1s,transform 0.08s}
+.num-btn:hover{background:var(--blue-light)}
+.num-btn:active{transform:scale(0.92);background:var(--blue-light)}
+.num-btn.zero{grid-column:span 2}
+.num-btn.del{color:var(--red);font-size:24px}
+
+/* AMOUNT BOX */
+.amount-box{background:var(--blue);border-radius:var(--radius);padding:24px 20px;text-align:center}
+.amount-label{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:6px}
+.amount-value{font-size:48px;font-weight:800;color:#fff;line-height:1}
+.amount-unit{font-size:18px;color:rgba(255,255,255,0.8);margin-left:6px}
+.phone-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.2);color:#fff;border-radius:999px;padding:5px 14px;font-size:14px;font-weight:600;margin-top:10px}
+
+/* STEPS */
+.steps{display:flex;justify-content:center;gap:8px;padding:10px 0 2px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border-strong);transition:background 0.2s,transform 0.2s}
+.step-dot.on{background:var(--blue);transform:scale(1.3)}
+
+/* QR */
+.qr-wrap{display:flex;flex-direction:column;align-items:center;padding:10px 0 6px}
+#qrCanvas{border-radius:12px;border:4px solid var(--blue);padding:8px;background:#fff}
+.lock-badge{display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);color:var(--blue-text);border-radius:999px;padding:6px 16px;font-size:14px;font-weight:700;margin-bottom:14px}
+.info-row{display:flex;justify-content:space-between;align-items:center;font-size:15px;padding:10px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-key{color:var(--text-muted)}
+.info-val{font-weight:700;color:var(--text)}
+.info-val.big{font-size:20px;color:var(--blue)}
+.success-bar{background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.success-bar .icon{font-size:22px;flex-shrink:0}
+.success-bar .stitle{font-size:15px;font-weight:700;color:var(--green-title)}
+.success-bar .sbody{font-size:13px;color:var(--green-body);margin-top:3px}
+
+/* HISTORY */
+.hist-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px;animation:fadeIn 0.18s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.hist-icon{width:46px;height:46px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.hist-body{flex:1;min-width:0}
+.hist-amount{font-size:20px;font-weight:800;color:var(--blue)}
+.hist-phone{font-size:13px;color:var(--text-muted);margin-top:2px}
+.hist-time{font-size:12px;color:var(--text-hint);margin-top:2px}
+.hist-del{background:none;border:none;cursor:pointer;padding:10px;color:var(--red);font-size:22px;border-radius:var(--radius-sm);transition:background 0.1s;flex-shrink:0}
+.hist-del:hover{background:var(--red-bg)}
+.empty-state{text-align:center;padding:3rem 1rem;display:flex;flex-direction:column;align-items:center;gap:10px}
+.empty-icon{font-size:52px}
+.empty-title{font-size:18px;font-weight:700;color:var(--text)}
+.empty-sub{font-size:14px;color:var(--text-muted)}
+
+/* CONFIRM */
+.confirm-bg{flex:1;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:24px;min-height:300px}
+.confirm-box{background:var(--card);border-radius:var(--radius);padding:28px 24px;width:100%}
+.confirm-title{font-size:20px;font-weight:800;text-align:center;color:var(--text);margin-bottom:8px}
+.confirm-sub{font-size:15px;color:var(--text-muted);text-align:center;margin-bottom:20px}
+.confirm-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-red{font-family:'Sarabun',sans-serif;font-size:17px;font-weight:700;padding:16px;background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer}
+.btn-red:hover{opacity:0.85}
+.btn-outline{font-family:'Sarabun',sans-serif;font-size:17px;font-weight:600;padding:16px;background:var(--card);color:var(--text);border:1px solid var(--border-strong);border-radius:var(--radius-sm);cursor:pointer}
+.btn-outline:hover{background:var(--bg)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- PHONE -->
+  <div class="screen active" id="sc-phone">
+    <div class="topbar">
+      <div class="topbar-logo">💳</div>
+      <div>
+        <div class="topbar-title">จ่าย QR</div>
+        <div class="topbar-sub">สแกนจ่ายง่าย ล็อคยอดได้</div>
+      </div>
+    </div>
+    <div class="scroll-body">
+      <div class="steps">
+        <div class="step-dot on"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+      <div class="card">
+        <div class="field-label">📱 เบอร์โทรศัพท์</div>
+        <div class="phone-display-box" id="phoneDisplay"><span class="phone-placeholder">กรอกเบอร์มือถือ</span></div>
+        <div style="text-align:center;margin-top:10px;min-height:26px" id="phoneValidMsg"></div>
+      </div>
+      <div class="numpad">
+        <button class="num-btn" onclick="phonePress('1')">1</button>
+        <button class="num-btn" onclick="phonePress('2')">2</button>
+        <button class="num-btn" onclick="phonePress('3')">3</button>
+        <button class="num-btn" onclick="phonePress('4')">4</button>
+        <button class="num-btn" onclick="phonePress('5')">5</button>
+        <button class="num-btn" onclick="phonePress('6')">6</button>
+        <button class="num-btn" onclick="phonePress('7')">7</button>
+        <button class="num-btn" onclick="phonePress('8')">8</button>
+        <button class="num-btn" onclick="phonePress('9')">9</button>
+        <button class="num-btn zero" onclick="phonePress('0')">0</button>
+        <button class="num-btn del" onclick="phoneDel()">⌫</button>
+      </div>
+      <button class="btn btn-blue" id="phoneNextBtn" disabled onclick="gotoAmount()">ถัดไป →</button>
+    </div>
+  </div>
+
+  <!-- AMOUNT -->
+  <div class="screen" id="sc-amount">
+    <div class="scroll-body">
+      <div class="steps">
+        <div class="step-dot on"></div>
+        <div class="step-dot on"></div>
+        <div class="step-dot"></div>
+      </div>
+      <div class="amount-box">
+        <div class="amount-label">ยอดเงินที่ต้องการรับ</div>
+        <div>
+          <span class="amount-value" id="amountDisplay">0</span>
+          <span class="amount-unit">บาท</span>
+        </div>
+        <div><span class="phone-chip" id="phoneChip">📱 —</span></div>
+      </div>
+      <div class="numpad">
+        <button class="num-btn" onclick="numPress('1')">1</button>
+        <button class="num-btn" onclick="numPress('2')">2</button>
+        <button class="num-btn" onclick="numPress('3')">3</button>
+        <button class="num-btn" onclick="numPress('4')">4</button>
+        <button class="num-btn" onclick="numPress('5')">5</button>
+        <button class="num-btn" onclick="numPress('6')">6</button>
+        <button class="num-btn" onclick="numPress('7')">7</button>
+        <button class="num-btn" onclick="numPress('8')">8</button>
+        <button class="num-btn" onclick="numPress('9')">9</button>
+        <button class="num-btn zero" onclick="numPress('0')">0</button>
+        <button class="num-btn del" onclick="numDel()">⌫</button>
+      </div>
+      <button class="btn btn-blue" id="genQRBtn" disabled onclick="gotoQR()">🔒 สร้าง QR ล็อคยอด</button>
+      <button class="btn btn-ghost" onclick="backToPhone()">← แก้ไขเบอร์</button>
+    </div>
+  </div>
+
+  <!-- QR -->
+  <div class="screen" id="sc-qr">
+    <div class="scroll-body">
+      <div class="steps">
+        <div class="step-dot on"></div>
+        <div class="step-dot on"></div>
+        <div class="step-dot on"></div>
+      </div>
+      <div class="card">
+        <div style="text-align:center">
+          <div class="lock-badge">🔒 ล็อคยอดเงินแล้ว</div>
+        </div>
+        <div class="qr-wrap">
+          <div id="qrCanvas"></div>
+        </div>
+        <div class="info-row"><span class="info-key">💰 ยอดเงิน</span><span class="info-val big" id="qrAmt">—</span></div>
+        <div class="info-row"><span class="info-key">📱 เบอร์โทร</span><span class="info-val" id="qrPhone">—</span></div>
+        <div class="info-row"><span class="info-key">⏰ เวลา</span><span class="info-val" id="qrTime">—</span></div>
+      </div>
+      <div class="success-bar">
+        <div class="icon">✅</div>
+        <div>
+          <div class="stitle">พร้อมรับเงินแล้ว</div>
+          <div class="sbody">ให้ผู้จ่ายสแกน QR ด้วยแอปธนาคาร ยอดเงินถูกล็อคไว้แล้ว</div>
+        </div>
+      </div>
+      <button class="btn btn-blue" onclick="done()">✅ เสร็จสิ้น</button>
+      <button class="btn btn-ghost" onclick="backToAmount()">← แก้ไขยอดเงิน</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="screen" id="sc-history">
+    <div class="topbar">
+      <div class="topbar-logo" style="background:#e3ecfc;font-size:20px">🕐</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="topbar-title">ประวัติ</div>
+          <span style="background:var(--blue-light);color:var(--blue-text);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:700" id="histCount">0</span>
+        </div>
+        <div class="topbar-sub">รายการรับเงินทั้งหมด</div>
+      </div>
+    </div>
+    <div class="scroll-body">
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- CONFIRM DELETE -->
+  <div class="screen" id="sc-confirm">
+    <div class="confirm-bg">
+      <div class="confirm-box">
+        <div class="confirm-title">⚠️ ลบรายการนี้?</div>
+        <div class="confirm-sub" id="confirmDesc"></div>
+        <div class="confirm-btns">
+          <button class="btn-outline" onclick="cancelDelete()">ยกเลิก</button>
+          <button class="btn-red" onclick="confirmDelete()">ลบเลย</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GLOBAL BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="bottom-tab active" id="navPay" onclick="showTab('pay')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/></svg>
+      รับเงิน
+    </button>
+    <button class="bottom-tab" id="navHist" onclick="showTab('history')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 0 .5-4.5"/><polyline points="3 3 3 7 7 7"/></svg>
+      ประวัติ
+      <span class="nav-badge" id="navBadge">0</span>
+    </button>
+  </nav>
+
+</div>
+<script>
+let phone = '', phoneStr = '', amountStr = '0', hasDot = false;
+let histData = [], deleteTargetId = null;
+let lastPayScreen = 'sc-phone';
+
+function isValidPhone(p) {
+  if (p.length !== 10 || !p.startsWith('0')) return false;
+  const pre = p.slice(0, 2);
+  return ['06','08','09'].includes(pre);
+}
+
+function fmt(p) {
+  return p.length === 10 ? p.slice(0,3)+'-'+p.slice(3,6)+'-'+p.slice(6) : p;
+}
+
+function phonePress(d) {
+  if (phoneStr.length >= 10) return;
+  phoneStr += d;
+  updatePhoneDisplay();
+}
+
+function phoneDel() {
+  if (!phoneStr.length) return;
+  phoneStr = phoneStr.slice(0,-1);
+  updatePhoneDisplay();
+}
+
+function updatePhoneDisplay() {
+  const box = document.getElementById('phoneDisplay');
+  const msg = document.getElementById('phoneValidMsg');
+  const btn = document.getElementById('phoneNextBtn');
+
+  if (!phoneStr.length) {
+    box.innerHTML = '<span class="phone-placeholder">กรอกเบอร์มือถือ</span>';
+    box.className = 'phone-display-box';
+    msg.innerHTML = '';
+    btn.disabled = true;
+    return;
+  }
+
+  box.textContent = fmt(phoneStr);
+
+  if (phoneStr.length < 10) {
+    box.className = 'phone-display-box';
+    msg.innerHTML = `<span style="color:var(--text-hint);font-size:13px">กรอกอีก ${10 - phoneStr.length} หลัก</span>`;
+    btn.disabled = true;
+  } else if (isValidPhone(phoneStr)) {
+    box.className = 'phone-display-box valid';
+    msg.innerHTML = '<span class="valid-badge">✅ เบอร์ถูกต้อง</span>';
+    btn.disabled = false;
+  } else {
+    box.className = 'phone-display-box invalid';
+    msg.innerHTML = '<span class="invalid-badge">❌ เบอร์ไม่ถูกต้อง กรุณาตรวจสอบ</span>';
+    btn.disabled = true;
+  }
+}
+
+function setScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const payScreens = ['sc-phone','sc-amount','sc-qr'];
+  if (payScreens.includes(id)) lastPayScreen = id;
+}
+
+function setNavActive(tab) {
+  document.getElementById('navPay').classList.toggle('active', tab === 'pay');
+  document.getElementById('navHist').classList.toggle('active', tab === 'history');
+}
+
+function showTab(tab) {
+  if (tab === 'pay') {
+    setNavActive('pay');
+    setScreen(lastPayScreen);
+  } else {
+    setNavActive('history');
+    renderHistory();
+    setScreen('sc-history');
+  }
+}
+
+function gotoAmount() {
+  phone = phoneStr;
+  if (!isValidPhone(phone)) return;
+  document.getElementById('phoneChip').textContent = '📱 ' + fmt(phone);
+  amountStr = '0'; hasDot = false;
+  updateDisplay();
+  setScreen('sc-amount');
+  setNavActive('pay');
+}
+
+function backToPhone() { setScreen('sc-phone'); setNavActive('pay'); }
+function backToAmount() { setScreen('sc-amount'); setNavActive('pay'); }
+
+function numPress(d) {
+  const parts = amountStr.split('.');
+  if (d === '.') {
+    if (hasDot) return;
+    hasDot = true; amountStr += '.';
+  } else {
+    if (hasDot && parts[1] && parts[1].length >= 2) return;
+    if (!hasDot && amountStr === '0') amountStr = d;
+    else amountStr += d;
+    if (amountStr.replace('.','').length > 9) { amountStr = amountStr.slice(0,-1); return; }
+  }
+  updateDisplay();
+}
+
+function numDel() {
+  if (amountStr.length <= 1) { amountStr = '0'; hasDot = false; }
+  else { if (amountStr.slice(-1) === '.') hasDot = false; amountStr = amountStr.slice(0,-1); }
+  updateDisplay();
+}
+
+function updateDisplay() {
+  const el = document.getElementById('amountDisplay');
+  const val = parseFloat(amountStr) || 0;
+  const parts = amountStr.split('.');
+  el.textContent = parts[1] !== undefined
+    ? parseFloat(parts[0]).toLocaleString('th-TH') + '.' + parts[1]
+    : val.toLocaleString('th-TH');
+  document.getElementById('genQRBtn').disabled = val <= 0;
+}
+
+function gotoQR() {
+  const val = parseFloat(amountStr) || 0;
+  if (val <= 0) return;
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'}) + ' น.';
+  const dateStr = now.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'});
+
+  document.getElementById('qrAmt').textContent = val.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' บาท';
+  document.getElementById('qrPhone').textContent = fmt(phone);
+  document.getElementById('qrTime').textContent = dateStr + ' ' + timeStr;
+
+  const qrDiv = document.getElementById('qrCanvas');
+  qrDiv.innerHTML = '';
+  new QRCode(qrDiv, {
+    text: 'promptpay|' + phone + '|' + val.toFixed(2),
+    width: 220, height: 220,
+    colorDark: '#1a56db', colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  histData.unshift({ id: Date.now(), phone, amount: val, time: timeStr, date: dateStr });
+  updateBadge();
+  setScreen('sc-qr');
+  setNavActive('pay');
+}
+
+function done() {
+  phoneStr = '';
+  amountStr = '0'; hasDot = false;
+  updatePhoneDisplay();
+  updateDisplay();
+  setScreen('sc-phone');
+  setNavActive('pay');
+}
+
+function updateBadge() {
+  const n = histData.length;
+  const b = document.getElementById('navBadge');
+  const hc = document.getElementById('histCount');
+  if (hc) hc.textContent = n;
+  if (n > 0) { b.textContent = n; b.style.display = 'block'; }
+  else b.style.display = 'none';
+}
+
+function renderHistory() {
+  updateBadge();
+  const list = document.getElementById('historyList');
+  if (!histData.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">ยังไม่มีประวัติ</div><div class="empty-sub">รายการรับเงินจะปรากฏที่นี่</div></div>`;
+    return;
+  }
+  list.innerHTML = histData.map(r => `
+    <div class="hist-item">
+      <div class="hist-icon">💳</div>
+      <div class="hist-body">
+        <div class="hist-amount">${r.amount.toLocaleString('th-TH',{minimumFractionDigits:2})} บาท</div>
+        <div class="hist-phone">📱 ${fmt(r.phone)}</div>
+        <div class="hist-time">🕐 ${r.date} ${r.time}</div>
+      </div>
+      <button class="hist-del" aria-label="ลบรายการ" onclick="askDelete(${r.id})">🗑️</button>
+    </div>
+  `).join('');
+}
+
+function askDelete(id) {
+  deleteTargetId = id;
+  const r = histData.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('confirmDesc').textContent =
+    'ยอด ' + r.amount.toLocaleString('th-TH',{minimumFractionDigits:2}) + ' บาท — ' + fmt(r.phone);
+  setScreen('sc-confirm');
+}
+
+function cancelDelete() {
+  deleteTargetId = null;
+  renderHistory();
+  setScreen('sc-history');
+}
+
+function confirmDelete() {
+  histData = histData.filter(r => r.id !== deleteTargetId);
+  deleteTargetId = null;
+  renderHistory();
+  setScreen('sc-history');
+}
+</script>
+</body>
+</html>
