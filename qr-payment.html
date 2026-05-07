@@ -30,11 +30,11 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
 .topbar-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
 
 /* GLOBAL BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:var(--nav-h);display:grid;grid-template-columns:1fr 1fr;background:var(--card);border-top:1px solid var(--border);z-index:100}
-.bottom-tab{font-family:'Sarabun',sans-serif;font-size:15px;font-weight:700;background:none;border:none;cursor:pointer;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:color 0.15s;position:relative;padding:8px 10px 10px}
-.bottom-tab svg{width:24px;height:24px;stroke-width:1.8}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:var(--nav-h);display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--card);border-top:1px solid var(--border);z-index:100}
+.bottom-tab{font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:color 0.15s;position:relative;padding:8px 6px 10px}
+.bottom-tab svg{width:22px;height:22px;stroke-width:1.8}
 .bottom-tab.active{color:var(--blue)}
-.bottom-tab.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:3px;background:var(--blue);border-radius:0 0 4px 4px}
+.bottom-tab.active::after{content:'';position:absolute;top:0;left:15%;right:15%;height:3px;background:var(--blue);border-radius:0 0 4px 4px}
 .nav-badge{position:absolute;top:6px;right:calc(50% - 20px);background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 6px;display:none}
 
 /* SCROLL BODY */
@@ -120,13 +120,46 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
 .btn-red:hover{opacity:0.85}
 .btn-outline{font-family:'Sarabun',sans-serif;font-size:17px;font-weight:600;padding:16px;background:var(--card);color:var(--text);border:1px solid var(--border-strong);border-radius:var(--radius-sm);cursor:pointer}
 .btn-outline:hover{background:var(--bg)}
+
+/* SETTINGS */
+.settings-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.settings-header{padding:14px 18px 10px;font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;background:var(--bg);border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s}
+.settings-row:last-child{border-bottom:none}
+.settings-row:hover{background:var(--bg)}
+.settings-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.settings-icon.blue{background:var(--blue-light)}
+.settings-icon.red{background:var(--red-bg)}
+.settings-icon.green{background:var(--green-bg)}
+.settings-row-body{flex:1;min-width:0}
+.settings-row-title{font-size:16px;font-weight:700;color:var(--text)}
+.settings-row-sub{font-size:13px;color:var(--text-muted);margin-top:2px}
+.settings-row-arrow{color:var(--text-hint);font-size:18px}
+
+/* SAVED PHONE BANNER */
+.saved-phone-banner{background:linear-gradient(135deg,#1a56db,#1447b5);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px}
+.spb-icon{width:46px;height:46px;background:rgba(255,255,255,0.18);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.spb-body{flex:1;min-width:0}
+.spb-label{font-size:12px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:3px}
+.spb-phone{font-size:22px;font-weight:800;color:#fff;letter-spacing:2px}
+.spb-edit{background:rgba(255,255,255,0.2);border:none;color:#fff;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;padding:8px 14px;border-radius:999px;cursor:pointer;transition:background 0.15s;flex-shrink:0}
+.spb-edit:hover{background:rgba(255,255,255,0.3)}
+
+/* AMOUNT SCREEN PHONE BANNER */
+.sc-amount-phone{display:flex;align-items:center;gap:10px;background:var(--blue-light);border-radius:var(--radius-sm);padding:10px 14px}
+.sc-amount-phone-icon{font-size:18px}
+.sc-amount-phone-num{font-size:17px;font-weight:700;color:var(--blue-text)}
+.sc-amount-phone-label{font-size:12px;color:var(--blue-text);opacity:0.7}
+
+/* PHONE SETUP SCREEN (settings) */
+.setup-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- PHONE -->
-  <div class="screen active" id="sc-phone">
+  <!-- AMOUNT (main pay screen — shown first if phone saved) -->
+  <div class="screen" id="sc-amount">
     <div class="topbar">
       <div class="topbar-logo">💳</div>
       <div>
@@ -135,11 +168,50 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
       </div>
     </div>
     <div class="scroll-body">
-      <div class="steps">
-        <div class="step-dot on"></div>
-        <div class="step-dot"></div>
-        <div class="step-dot"></div>
+      <!-- phone summary row -->
+      <div class="sc-amount-phone">
+        <div class="sc-amount-phone-icon">📱</div>
+        <div style="flex:1">
+          <div class="sc-amount-phone-label">รับเงินเข้าเบอร์</div>
+          <div class="sc-amount-phone-num" id="amountPhoneLabel">—</div>
+        </div>
+        <button class="spb-edit" style="background:var(--blue);color:#fff;padding:7px 13px" onclick="goToPhoneSetup()">แก้ไข</button>
       </div>
+      <div class="amount-box">
+        <div class="amount-label">ยอดเงินที่ต้องการรับ</div>
+        <div>
+          <span class="amount-value" id="amountDisplay">0</span>
+          <span class="amount-unit">บาท</span>
+        </div>
+      </div>
+      <div class="numpad">
+        <button class="num-btn" onclick="numPress('1')">1</button>
+        <button class="num-btn" onclick="numPress('2')">2</button>
+        <button class="num-btn" onclick="numPress('3')">3</button>
+        <button class="num-btn" onclick="numPress('4')">4</button>
+        <button class="num-btn" onclick="numPress('5')">5</button>
+        <button class="num-btn" onclick="numPress('6')">6</button>
+        <button class="num-btn" onclick="numPress('7')">7</button>
+        <button class="num-btn" onclick="numPress('8')">8</button>
+        <button class="num-btn" onclick="numPress('9')">9</button>
+        <button class="num-btn" id="dotBtn" onclick="numPress('.')">.</button>
+        <button class="num-btn" onclick="numPress('0')">0</button>
+        <button class="num-btn del" onclick="numDel()">⌫</button>
+      </div>
+      <button class="btn btn-blue" id="genQRBtn" disabled onclick="gotoQR()">🔒 สร้าง QR ล็อคยอด</button>
+    </div>
+  </div>
+
+  <!-- PHONE SETUP (first time or from settings/edit) -->
+  <div class="screen" id="sc-phone">
+    <div class="topbar">
+      <div class="topbar-logo" style="background:var(--blue-light);font-size:20px">📱</div>
+      <div>
+        <div class="topbar-title">ตั้งเบอร์รับเงิน</div>
+        <div class="topbar-sub" id="phoneSetupSub">กรอกเบอร์มือถือสำหรับรับเงิน</div>
+      </div>
+    </div>
+    <div class="scroll-body">
       <div class="card">
         <div class="field-label">📱 เบอร์โทรศัพท์</div>
         <div class="phone-display-box" id="phoneDisplay"><span class="phone-placeholder">กรอกเบอร์มือถือ</span></div>
@@ -158,52 +230,14 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
         <button class="num-btn zero" onclick="phonePress('0')">0</button>
         <button class="num-btn del" onclick="phoneDel()">⌫</button>
       </div>
-      <button class="btn btn-blue" id="phoneNextBtn" disabled onclick="gotoAmount()">ถัดไป →</button>
-    </div>
-  </div>
-
-  <!-- AMOUNT -->
-  <div class="screen" id="sc-amount">
-    <div class="scroll-body">
-      <div class="steps">
-        <div class="step-dot on"></div>
-        <div class="step-dot on"></div>
-        <div class="step-dot"></div>
-      </div>
-      <div class="amount-box">
-        <div class="amount-label">ยอดเงินที่ต้องการรับ</div>
-        <div>
-          <span class="amount-value" id="amountDisplay">0</span>
-          <span class="amount-unit">บาท</span>
-        </div>
-        <div><span class="phone-chip" id="phoneChip">📱 —</span></div>
-      </div>
-      <div class="numpad">
-        <button class="num-btn" onclick="numPress('1')">1</button>
-        <button class="num-btn" onclick="numPress('2')">2</button>
-        <button class="num-btn" onclick="numPress('3')">3</button>
-        <button class="num-btn" onclick="numPress('4')">4</button>
-        <button class="num-btn" onclick="numPress('5')">5</button>
-        <button class="num-btn" onclick="numPress('6')">6</button>
-        <button class="num-btn" onclick="numPress('7')">7</button>
-        <button class="num-btn" onclick="numPress('8')">8</button>
-        <button class="num-btn" onclick="numPress('9')">9</button>
-        <button class="num-btn zero" onclick="numPress('0')">0</button>
-        <button class="num-btn del" onclick="numDel()">⌫</button>
-      </div>
-      <button class="btn btn-blue" id="genQRBtn" disabled onclick="gotoQR()">🔒 สร้าง QR ล็อคยอด</button>
-      <button class="btn btn-ghost" onclick="backToPhone()">← แก้ไขเบอร์</button>
+      <button class="btn btn-blue" id="phoneNextBtn" disabled onclick="savePhone()">💾 บันทึกเบอร์นี้</button>
+      <button class="btn btn-ghost" id="phoneCancelBtn" style="display:none" onclick="cancelPhoneEdit()">← ยกเลิก</button>
     </div>
   </div>
 
   <!-- QR -->
   <div class="screen" id="sc-qr">
     <div class="scroll-body">
-      <div class="steps">
-        <div class="step-dot on"></div>
-        <div class="step-dot on"></div>
-        <div class="step-dot on"></div>
-      </div>
       <div class="card">
         <div style="text-align:center">
           <div class="lock-badge">🔒 ล็อคยอดเงินแล้ว</div>
@@ -222,8 +256,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
           <div class="sbody">ให้ผู้จ่ายสแกน QR ด้วยแอปธนาคาร ยอดเงินถูกล็อคไว้แล้ว</div>
         </div>
       </div>
-      <button class="btn btn-blue" onclick="done()">✅ เสร็จสิ้น</button>
-      <button class="btn btn-ghost" onclick="backToAmount()">← แก้ไขยอดเงิน</button>
+      <button class="btn btn-blue" onclick="done()">✅ เสร็จสิ้น — รับเงินอีกครั้ง</button>
     </div>
   </div>
 
@@ -258,6 +291,63 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
     </div>
   </div>
 
+  <!-- SETTINGS -->
+  <div class="screen" id="sc-settings">
+    <div class="topbar">
+      <div class="topbar-logo" style="background:#f3f0ff;font-size:20px">⚙️</div>
+      <div>
+        <div class="topbar-title">ตั้งค่า</div>
+        <div class="topbar-sub">จัดการเบอร์และข้อมูล</div>
+      </div>
+    </div>
+    <div class="scroll-body">
+      <!-- saved phone card -->
+      <div id="settingsPhoneCard"></div>
+
+      <div class="settings-section">
+        <div class="settings-header">เบอร์โทรศัพท์</div>
+        <div class="settings-row" onclick="goToPhoneSetup()">
+          <div class="settings-icon blue">📱</div>
+          <div class="settings-row-body">
+            <div class="settings-row-title">แก้ไขเบอร์รับเงิน</div>
+            <div class="settings-row-sub">เปลี่ยนเบอร์ที่ใช้สร้าง QR</div>
+          </div>
+          <div class="settings-row-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-header">ข้อมูล</div>
+        <div class="settings-row" onclick="clearHistory()">
+          <div class="settings-icon red">🗑️</div>
+          <div class="settings-row-body">
+            <div class="settings-row-title">ลบประวัติทั้งหมด</div>
+            <div class="settings-row-sub" id="settingsHistSub">0 รายการ</div>
+          </div>
+          <div class="settings-row-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-header">ติดต่อ</div>
+        <div class="settings-row" onclick="window.open('https://line.me/ti/p/Y3cnQTh7Rt','_blank')">
+          <div class="settings-icon" style="background:#06C755">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.629 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          </div>
+          <div class="settings-row-body">
+            <div class="settings-row-title">แจ้งปัญหา / ติดต่อ</div>
+            <div class="settings-row-sub">เปิด LINE เพื่อส่งข้อความหาเรา</div>
+          </div>
+          <div class="settings-row-arrow">›</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:20px 0;font-size:13px;color:var(--text-hint)">
+        จ่าย QR — ข้อมูลเก็บในเครื่องเท่านั้น
+      </div>
+    </div>
+  </div>
+
   <!-- GLOBAL BOTTOM NAV -->
   <nav class="bottom-nav">
     <button class="bottom-tab active" id="navPay" onclick="showTab('pay')">
@@ -269,22 +359,142 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
       ประวัติ
       <span class="nav-badge" id="navBadge">0</span>
     </button>
+    <button class="bottom-tab" id="navSettings" onclick="showTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      ตั้งค่า
+    </button>
   </nav>
 
 </div>
 <script>
-let phone = '', phoneStr = '', amountStr = '0', hasDot = false;
-let histData = [], deleteTargetId = null;
-let lastPayScreen = 'sc-phone';
+// ─── STATE ───────────────────────────────────────────────
+let phone = '';       // current saved phone
+let pendingAmount = 0; // amount waiting for done()
+let phoneStr = '';    // temp input while editing
+let amountStr = '0';
+let hasDot = false;
+let histData = [];
+let deleteTargetId = null;
+let phoneEditFromSettings = false; // track if came from settings
 
+const STORAGE_PHONE = 'qr_phone';
+const STORAGE_HIST  = 'qr_hist';
+
+// ─── INIT ─────────────────────────────────────────────────
+function init() {
+  try {
+    const saved = localStorage.getItem(STORAGE_PHONE);
+    if (saved) phone = saved;
+    const hist = localStorage.getItem(STORAGE_HIST);
+    if (hist) histData = JSON.parse(hist);
+  } catch(e) {}
+
+  updateBadge();
+
+  if (phone && isValidPhone(phone)) {
+    // skip phone screen, go straight to amount
+    setNavActive('pay');
+    showAmountScreen();
+  } else {
+    // first time — go to phone setup
+    phoneEditFromSettings = false;
+    document.getElementById('phoneCancelBtn').style.display = 'none';
+    document.getElementById('phoneSetupSub').textContent = 'กรอกเบอร์มือถือสำหรับรับเงิน';
+    setNavActive('pay');
+    setScreen('sc-phone');
+  }
+}
+
+// ─── UTILS ────────────────────────────────────────────────
 function isValidPhone(p) {
-  if (p.length !== 10 || !p.startsWith('0')) return false;
-  const pre = p.slice(0, 2);
-  return ['06','08','09'].includes(pre);
+  if (!p || p.length !== 10 || !p.startsWith('0')) return false;
+  return ['06','08','09'].includes(p.slice(0,2));
 }
 
 function fmt(p) {
-  return p.length === 10 ? p.slice(0,3)+'-'+p.slice(3,6)+'-'+p.slice(6) : p;
+  return p && p.length === 10 ? p.slice(0,3)+'-'+p.slice(3,6)+'-'+p.slice(6) : (p || '—');
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_PHONE, phone);
+    localStorage.setItem(STORAGE_HIST, JSON.stringify(histData));
+  } catch(e) {}
+}
+
+// ─── SCREENS ──────────────────────────────────────────────
+function setScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function setNavActive(tab) {
+  document.getElementById('navPay').classList.toggle('active', tab === 'pay');
+  document.getElementById('navHist').classList.toggle('active', tab === 'history');
+  document.getElementById('navSettings').classList.toggle('active', tab === 'settings');
+}
+
+function showAmountScreen() {
+  amountStr = '0'; hasDot = false;
+  updateDisplay();
+  document.getElementById('amountPhoneLabel').textContent = fmt(phone);
+  setScreen('sc-amount');
+}
+
+function showTab(tab) {
+  if (tab === 'pay') {
+    setNavActive('pay');
+    if (phone && isValidPhone(phone)) {
+      showAmountScreen();
+    } else {
+      phoneEditFromSettings = false;
+      document.getElementById('phoneCancelBtn').style.display = 'none';
+      resetPhoneInput();
+      setScreen('sc-phone');
+    }
+  } else if (tab === 'history') {
+    setNavActive('history');
+    renderHistory();
+    setScreen('sc-history');
+  } else {
+    setNavActive('settings');
+    renderSettings();
+    setScreen('sc-settings');
+  }
+}
+
+// ─── PHONE SETUP ─────────────────────────────────────────
+function resetPhoneInput() {
+  phoneStr = '';
+  updatePhoneDisplay();
+}
+
+function goToPhoneSetup() {
+  phoneEditFromSettings = true;
+  phoneStr = phone || '';   // prefill with current
+  document.getElementById('phoneCancelBtn').style.display = phone ? 'block' : 'none';
+  document.getElementById('phoneSetupSub').textContent = phone ? 'เปลี่ยนเบอร์รับเงิน' : 'กรอกเบอร์มือถือสำหรับรับเงิน';
+  updatePhoneDisplay();
+  setNavActive('settings');
+  setScreen('sc-phone');
+}
+
+function cancelPhoneEdit() {
+  setNavActive(phone ? 'settings' : 'pay');
+  if (phone) {
+    renderSettings();
+    setScreen('sc-settings');
+  } else {
+    showAmountScreen();
+  }
+}
+
+function savePhone() {
+  if (!isValidPhone(phoneStr)) return;
+  phone = phoneStr;
+  saveToStorage();
+  showAmountScreen();
+  setNavActive('pay');
 }
 
 function phonePress(d) {
@@ -311,9 +521,7 @@ function updatePhoneDisplay() {
     btn.disabled = true;
     return;
   }
-
   box.textContent = fmt(phoneStr);
-
   if (phoneStr.length < 10) {
     box.className = 'phone-display-box';
     msg.innerHTML = `<span style="color:var(--text-hint);font-size:13px">กรอกอีก ${10 - phoneStr.length} หลัก</span>`;
@@ -329,42 +537,7 @@ function updatePhoneDisplay() {
   }
 }
 
-function setScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  const payScreens = ['sc-phone','sc-amount','sc-qr'];
-  if (payScreens.includes(id)) lastPayScreen = id;
-}
-
-function setNavActive(tab) {
-  document.getElementById('navPay').classList.toggle('active', tab === 'pay');
-  document.getElementById('navHist').classList.toggle('active', tab === 'history');
-}
-
-function showTab(tab) {
-  if (tab === 'pay') {
-    setNavActive('pay');
-    setScreen(lastPayScreen);
-  } else {
-    setNavActive('history');
-    renderHistory();
-    setScreen('sc-history');
-  }
-}
-
-function gotoAmount() {
-  phone = phoneStr;
-  if (!isValidPhone(phone)) return;
-  document.getElementById('phoneChip').textContent = '📱 ' + fmt(phone);
-  amountStr = '0'; hasDot = false;
-  updateDisplay();
-  setScreen('sc-amount');
-  setNavActive('pay');
-}
-
-function backToPhone() { setScreen('sc-phone'); setNavActive('pay'); }
-function backToAmount() { setScreen('sc-amount'); setNavActive('pay'); }
-
+// ─── AMOUNT ───────────────────────────────────────────────
 function numPress(d) {
   const parts = amountStr.split('.');
   if (d === '.') {
@@ -393,49 +566,98 @@ function updateDisplay() {
     ? parseFloat(parts[0]).toLocaleString('th-TH') + '.' + parts[1]
     : val.toLocaleString('th-TH');
   document.getElementById('genQRBtn').disabled = val <= 0;
+  const dotBtn = document.getElementById('dotBtn');
+  if (dotBtn) dotBtn.style.opacity = hasDot ? '0.35' : '1';
 }
 
+// ─── PROMPTPAY EMVCo PAYLOAD ──────────────────────────────
+function crc16(str) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+    }
+  }
+  return ((crc & 0xFFFF).toString(16).toUpperCase().padStart(4,'0'));
+}
+
+function tlv(tag, value) {
+  return tag + value.length.toString().padStart(2,'0') + value;
+}
+
+function buildPromptPayQR(phoneNumber, amount) {
+  // PromptPay spec: 0812345678 → 0066812345678 (NO '+' sign)
+  let p = phoneNumber.replace(/\D/g,'');
+  if (p.startsWith('0')) p = '0066' + p.slice(1);
+
+  const merchantAcct = tlv('00','A000000677010111') + tlv('01', p);
+  const payload =
+    tlv('00','01') +                          // Payload Format Indicator
+    tlv('01','12') +                          // Point of Initiation: dynamic
+    tlv('29', merchantAcct) +                 // Merchant Account (PromptPay)
+    tlv('52','0000') +                        // MCC
+    tlv('53','764') +                         // Currency: THB
+    tlv('54', amount.toFixed(2)) +            // Transaction Amount
+    tlv('58','TH') +                          // Country Code
+    tlv('59','') +                            // Merchant Name (empty = valid)
+    tlv('60','Bangkok');                       // Merchant City
+
+  const withCrcTag = payload + '6304';
+  return withCrcTag + crc16(withCrcTag);
+}
+
+// ─── QR ───────────────────────────────────────────────────
 function gotoQR() {
   const val = parseFloat(amountStr) || 0;
   if (val <= 0) return;
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'}) + ' น.';
-  const dateStr = now.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'});
 
-  document.getElementById('qrAmt').textContent = val.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' บาท';
+  // store pending — time recorded only when user presses "done"
+  pendingAmount = val;
+
+  document.getElementById('qrAmt').textContent = val.toLocaleString('th-TH',{minimumFractionDigits:2}) + ' บาท';
   document.getElementById('qrPhone').textContent = fmt(phone);
-  document.getElementById('qrTime').textContent = dateStr + ' ' + timeStr;
+  document.getElementById('qrTime').textContent = '⏳ รอยืนยัน...';
 
   const qrDiv = document.getElementById('qrCanvas');
   qrDiv.innerHTML = '';
+  const qrPayload = buildPromptPayQR(phone, val);
   new QRCode(qrDiv, {
-    text: 'promptpay|' + phone + '|' + val.toFixed(2),
+    text: qrPayload,
     width: 220, height: 220,
     colorDark: '#1a56db', colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
+    correctLevel: QRCode.CorrectLevel.M
   });
 
-  histData.unshift({ id: Date.now(), phone, amount: val, time: timeStr, date: dateStr });
-  updateBadge();
   setScreen('sc-qr');
   setNavActive('pay');
 }
 
 function done() {
-  phoneStr = '';
+  // record time NOW — when user confirms payment received
+  if (pendingAmount > 0) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) + ' น.';
+    const dateStr = now.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
+    histData.unshift({ id: Date.now(), phone, amount: pendingAmount, time: timeStr, date: dateStr });
+    saveToStorage();
+    updateBadge();
+    pendingAmount = 0;
+  }
   amountStr = '0'; hasDot = false;
-  updatePhoneDisplay();
   updateDisplay();
-  setScreen('sc-phone');
+  document.getElementById('amountPhoneLabel').textContent = fmt(phone);
+  setScreen('sc-amount');
   setNavActive('pay');
 }
 
+// ─── HISTORY ──────────────────────────────────────────────
 function updateBadge() {
   const n = histData.length;
   const b = document.getElementById('navBadge');
   const hc = document.getElementById('histCount');
   if (hc) hc.textContent = n;
-  if (n > 0) { b.textContent = n; b.style.display = 'block'; }
+  if (n > 0) { b.textContent = n > 99 ? '99+' : n; b.style.display = 'block'; }
   else b.style.display = 'none';
 }
 
@@ -477,9 +699,67 @@ function cancelDelete() {
 function confirmDelete() {
   histData = histData.filter(r => r.id !== deleteTargetId);
   deleteTargetId = null;
+  saveToStorage();
   renderHistory();
   setScreen('sc-history');
 }
+
+// ─── SETTINGS ─────────────────────────────────────────────
+function renderSettings() {
+  const card = document.getElementById('settingsPhoneCard');
+  if (phone && isValidPhone(phone)) {
+    card.innerHTML = `
+      <div class="saved-phone-banner">
+        <div class="spb-icon">📱</div>
+        <div class="spb-body">
+          <div class="spb-label">เบอร์รับเงินปัจจุบัน</div>
+          <div class="spb-phone">${fmt(phone)}</div>
+        </div>
+      </div>`;
+  } else {
+    card.innerHTML = `
+      <div style="background:var(--red-bg);border:1px solid var(--red);border-radius:var(--radius);padding:14px 16px;display:flex;gap:10px;align-items:center">
+        <span style="font-size:20px">⚠️</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--red)">ยังไม่ได้ตั้งเบอร์</div>
+          <div style="font-size:13px;color:var(--red);margin-top:2px">กรุณาตั้งเบอร์ก่อนสร้าง QR</div>
+        </div>
+      </div>`;
+  }
+  document.getElementById('settingsHistSub').textContent = histData.length + ' รายการ';
+}
+
+function clearHistory() {
+  if (!histData.length) return;
+  document.getElementById('clearHistDesc').textContent = 'ประวัติทั้งหมด ' + histData.length + ' รายการจะถูกลบถาวร';
+  document.getElementById('clearHistModal').style.display = 'flex';
+}
+function closeClearHistModal() {
+  document.getElementById('clearHistModal').style.display = 'none';
+}
+function confirmClearHistory() {
+  histData = [];
+  saveToStorage();
+  updateBadge();
+  closeClearHistModal();
+  renderSettings();
+}
+
+// ─── START ────────────────────────────────────────────────
+init();
 </script>
+
+  <!-- CLEAR HISTORY MODAL -->
+  <div id="clearHistModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:24px">
+    <div style="background:var(--card);border-radius:var(--radius);padding:28px 24px;width:100%;max-width:380px;animation:fadeIn 0.18s ease">
+      <div style="font-size:36px;text-align:center;margin-bottom:12px">🗑️</div>
+      <div style="font-size:20px;font-weight:800;text-align:center;color:var(--text);margin-bottom:8px">ลบประวัติทั้งหมด?</div>
+      <div style="font-size:15px;color:var(--text-muted);text-align:center;margin-bottom:24px" id="clearHistDesc"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button class="btn-outline" onclick="closeClearHistModal()">ยกเลิก</button>
+        <button class="btn-red" onclick="confirmClearHistory()">ลบเลย</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
