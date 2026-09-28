@@ -161,6 +161,24 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
 
 /* PHONE SETUP SCREEN (settings) */
 .setup-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+/* NOTES */
+.note-label{font-size:14px;font-weight:700;color:var(--text-muted);margin:14px 0 8px}
+.note-field{width:100%;font-family:'Sarabun',sans-serif;font-size:16px;line-height:1.4;padding:12px 14px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);resize:none;outline:none}
+.note-field:focus{border-color:var(--blue)}
+.hist-note{font-size:13px;color:var(--text);background:var(--bg);border-radius:6px;padding:6px 10px;margin-top:6px;word-break:break-word;white-space:pre-wrap;cursor:pointer}
+.hist-note.empty{color:var(--blue);background:var(--blue-light);font-weight:600}
+/* PHOTO + SLIP */
+.photo-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.photo-btn{font-family:'Sarabun',sans-serif;font-size:15px;font-weight:700;text-align:center;padding:12px 8px;background:var(--card);color:var(--text);border:1px solid var(--border-strong);border-radius:var(--radius-sm);cursor:pointer;user-select:none}
+.photo-btn:active{background:var(--blue-light)}
+.file-hidden{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.photo-prev{position:relative;margin-bottom:10px}
+.photo-prev img{display:block;width:100%;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border)}
+.photo-x{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:999px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer}
+.hist-photo{display:block;width:100%;max-height:160px;min-height:60px;object-fit:cover;border-radius:8px;margin-top:8px;background:var(--bg);cursor:pointer}
+.slip-btn{font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;color:var(--blue-text);background:var(--blue-light);border:none;border-radius:999px;padding:7px 14px;margin-top:8px;cursor:pointer}
+.photo-viewer{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;align-items:center;justify-content:center;padding:16px}
+.photo-viewer img{max-width:100%;max-height:100%;border-radius:8px}
 </style>
 </head>
 <body>
@@ -256,6 +274,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
         <div class="info-row"><span class="info-key">💰 ยอดเงิน</span><span class="info-val big" id="qrAmt">—</span></div>
         <div class="info-row"><span class="info-key">📱 เบอร์โทร</span><span class="info-val" id="qrPhone">—</span></div>
         <div class="info-row"><span class="info-key">⏰ เวลา</span><span class="info-val" id="qrTime">—</span></div>
+
+<div class="note-label">📝 บันทึกช่วยจำ (ไม่บังคับ)</div>
+<textarea class="note-field" id="qrNote" rows="2" maxlength="200" placeholder="เช่น ค่าอาหาร, ชื่อลูกค้า..."></textarea>
+
+<div class="note-label">📷 แนบรูป (ไม่บังคับ)</div>
+<div id="qrPhotoPreview"></div>
+<div class="photo-row">
+<label class="photo-btn" for="qrPhotoCam">📷 ถ่ายรูป</label>
+<label class="photo-btn" for="qrPhotoFile">🖼️ เลือกรูป</label>
+</div>
+<input type="file" accept="image/*" capture="environment" id="qrPhotoCam" class="file-hidden" onchange="onQrPhoto(this)">
+<input type="file" accept="image/*" id="qrPhotoFile" class="file-hidden" onchange="onQrPhoto(this)">
       </div>
       <div class="success-bar">
         <div class="icon">✅</div>
@@ -326,6 +356,14 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;disp
 
       <div class="settings-section">
         <div class="settings-header">ข้อมูล</div>
+<div class="settings-row" onclick="editShopName()">
+<div class="settings-icon blue">🧾</div>
+<div class="settings-row-body">
+<div class="settings-row-title">ชื่อบนสลิป</div>
+<div class="settings-row-sub" id="shopNameSub">ยังไม่ได้ตั้ง</div>
+</div>
+<div class="settings-row-arrow">›</div>
+</div>
         <div class="settings-row" onclick="clearHistory()">
           <div class="settings-icon red">🗑️</div>
           <div class="settings-row-body">
@@ -626,6 +664,8 @@ function gotoQR() {
   document.getElementById('qrAmt').textContent = val.toLocaleString('th-TH',{minimumFractionDigits:2}) + ' บาท';
   document.getElementById('qrPhone').textContent = fmt(phone);
   document.getElementById('qrTime').textContent = '⏳ รอยืนยัน...';
+document.getElementById('qrNote').value = '';
+clearPendingPhoto();
 
   const qrDiv = document.getElementById('qrCanvas');
   qrDiv.innerHTML = '';
@@ -647,7 +687,18 @@ function done() {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) + ' น.';
     const dateStr = now.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
-    histData.unshift({ id: Date.now(), phone, amount: pendingAmount, time: timeStr, date: dateStr });
+    const note = document.getElementById('qrNote').value.trim();
+const rec = { id: Date.now(), phone, amount: pendingAmount, time: timeStr, date: dateStr, note, hasPhoto: false };
+histData.unshift(rec);
+document.getElementById('qrNote').value = '';
+if (pendingPhoto) {
+  const pb = pendingPhoto;
+  photoPut(rec.id, pb).then(() => {
+    rec.hasPhoto = true; saveToStorage();
+    if (document.getElementById('sc-history').classList.contains('active')) renderHistory();
+  }).catch(() => alert('บันทึกรูปแนบไม่สำเร็จ แต่บันทึกรายการแล้ว'));
+}
+clearPendingPhoto();
     saveToStorage();
     updateBadge();
     pendingAmount = 0;
@@ -670,6 +721,10 @@ function updateBadge() {
 }
 
 function renderHistory() {
+renderHistoryBase();
+loadHistPhotos();
+}
+function renderHistoryBase() {
   updateBadge();
   const list = document.getElementById('historyList');
   if (!histData.length) {
@@ -683,6 +738,9 @@ function renderHistory() {
         <div class="hist-amount">${r.amount.toLocaleString('th-TH',{minimumFractionDigits:2})} บาท</div>
         <div class="hist-phone">📱 ${fmt(r.phone)}</div>
         <div class="hist-time">🕐 ${r.date} ${r.time}</div>
+<div class="hist-note ${r.note ? '' : 'empty'}" onclick="openNoteEdit(${r.id})">${r.note ? '📝 ' + escapeHtml(r.note) : (r.hasPhoto ? '✏️ เพิ่มโน้ต' : '✏️ เพิ่มโน้ตหรือรูป')}</div>
+${r.hasPhoto ? `<img class="hist-photo" data-pid="${r.id}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="รูปแนบ" onclick="viewPhoto(${r.id})">` : ''}
+<button class="slip-btn" onclick="saveSlip(${r.id})">🧾 บันทึกสลิป</button>
       </div>
       <button class="hist-del" aria-label="ลบรายการ" onclick="askDelete(${r.id})">🗑️</button>
     </div>
@@ -705,6 +763,7 @@ function cancelDelete() {
 }
 
 function confirmDelete() {
+photoDel(deleteTargetId).catch(() => {});
   histData = histData.filter(r => r.id !== deleteTargetId);
   deleteTargetId = null;
   saveToStorage();
@@ -735,6 +794,7 @@ function renderSettings() {
       </div>`;
   }
   document.getElementById('settingsHistSub').textContent = histData.length + ' รายการ';
+document.getElementById('shopNameSub').textContent = shopName || 'ยังไม่ได้ตั้ง (แตะเพื่อตั้งชื่อร้านหรือชื่อเครื่อง)';
 }
 
 function clearHistory() {
@@ -746,11 +806,281 @@ function closeClearHistModal() {
   document.getElementById('clearHistModal').style.display = 'none';
 }
 function confirmClearHistory() {
+photoClear().catch(() => {});
   histData = [];
   saveToStorage();
   updateBadge();
   closeClearHistModal();
   renderSettings();
+}
+
+// ─── NOTES / PHOTO / SLIP ─────────────────────────────────
+let noteEditId = null;
+let pendingPhoto = null, pendingPhotoUrl = '';
+let editPhoto = { blob: null, url: '', changed: false, loading: false };
+let histUrls = [];
+let shopName = '';
+try { shopName = localStorage.getItem('qr_shop') || ''; } catch (e) {}
+const SLIP_SHOW_QR = true; // เปลี่ยนเป็น false ถ้าไม่ต้องการ QR ในรูปสลิป
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// --- IndexedDB (เก็บรูปแยกจาก localStorage เพราะไฟล์รูปใหญ่) ---
+let _db = null;
+function openDB() {
+  return new Promise((res, rej) => {
+    if (_db) return res(_db);
+    if (!window.indexedDB) return rej(new Error('no indexedDB'));
+    const rq = indexedDB.open('qr_photos', 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore('photos');
+    rq.onsuccess = () => { _db = rq.result; res(_db); };
+    rq.onerror = () => rej(rq.error);
+  });
+}
+async function idbDo(mode, fn) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('photos', mode);
+    const rq = fn(tx.objectStore('photos'));
+    tx.oncomplete = () => res(rq && rq.result);
+    tx.onerror = tx.onabort = () => rej(tx.error);
+  });
+}
+const photoPut = (id, blob) => idbDo('readwrite', st => st.put(blob, id));
+const photoGet = id => idbDo('readonly', st => st.get(id));
+const photoDel = id => idbDo('readwrite', st => st.delete(id));
+const photoClear = () => idbDo('readwrite', st => st.clear());
+
+// --- รูป: ย่อขนาดก่อนเก็บ ---
+function compressImage(file, maxSide = 1000, q = 0.72) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * k), h = Math.round(img.naturalHeight * k);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? res(b) : rej(new Error('blob')), 'image/jpeg', q);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('img')); };
+    img.src = url;
+  });
+}
+function blobToImg(b) {
+  return new Promise((res, rej) => {
+    const u = URL.createObjectURL(b), i = new Image();
+    i.onload = () => { res(i); setTimeout(() => URL.revokeObjectURL(u), 30000); };
+    i.onerror = rej; i.src = u;
+  });
+}
+
+// --- แนบรูปที่หน้า QR ---
+function renderPendingPhoto() {
+  const box = document.getElementById('qrPhotoPreview');
+  box.innerHTML = pendingPhoto
+    ? `<div class="photo-prev"><img src="${pendingPhotoUrl}" alt="รูปที่แนบ"><button class="photo-x" onclick="clearPendingPhoto()">✕ ไม่แนบ</button></div>` : '';
+}
+function clearPendingPhoto() {
+  if (pendingPhotoUrl) URL.revokeObjectURL(pendingPhotoUrl);
+  pendingPhoto = null; pendingPhotoUrl = '';
+  renderPendingPhoto();
+}
+async function onQrPhoto(inp) {
+  const f = inp.files && inp.files[0]; inp.value = '';
+  if (!f) return;
+  try {
+    const b = await compressImage(f);
+    if (pendingPhotoUrl) URL.revokeObjectURL(pendingPhotoUrl);
+    pendingPhoto = b; pendingPhotoUrl = URL.createObjectURL(b);
+    renderPendingPhoto();
+  } catch (e) { alert('เปิดรูปไม่สำเร็จ ลองเลือกรูปอื่น'); }
+}
+
+// --- แก้ไขโน้ต/รูปในหน้าประวัติ ---
+function renderEditPhoto() {
+  const box = document.getElementById('noteEditPhoto');
+  if (editPhoto.loading) { box.innerHTML = '<div style="font-size:13px;color:var(--text-hint);padding:8px 0">กำลังโหลดรูป...</div>'; return; }
+  box.innerHTML = editPhoto.blob
+    ? `<div class="photo-prev"><img src="${editPhoto.url}" alt="รูปแนบ"><button class="photo-x" onclick="setEditPhoto(null,true)">✕ ลบรูป</button></div>` : '';
+}
+function setEditPhoto(b, changed) {
+  if (editPhoto.url) URL.revokeObjectURL(editPhoto.url);
+  editPhoto = { blob: b, url: b ? URL.createObjectURL(b) : '', changed, loading: false };
+  renderEditPhoto();
+}
+async function onEditPhoto(inp) {
+  const f = inp.files && inp.files[0]; inp.value = '';
+  if (!f) return;
+  try { setEditPhoto(await compressImage(f), true); }
+  catch (e) { alert('เปิดรูปไม่สำเร็จ ลองเลือกรูปอื่น'); }
+}
+async function openNoteEdit(id) {
+  const r = histData.find(x => x.id === id);
+  if (!r) return;
+  noteEditId = id;
+  document.getElementById('noteEditDesc').textContent =
+    'ยอด ' + r.amount.toLocaleString('th-TH',{minimumFractionDigits:2}) + ' บาท — ' + r.date + ' ' + r.time;
+  document.getElementById('noteEditInput').value = r.note || '';
+  editPhoto = { blob: null, url: '', changed: false, loading: !!r.hasPhoto };
+  renderEditPhoto();
+  document.getElementById('noteEditModal').style.display = 'flex';
+  if (r.hasPhoto) {
+    try {
+      const b = await photoGet(id);
+      if (noteEditId === id && editPhoto.loading) setEditPhoto(b || null, false);
+    } catch (e) {
+      if (noteEditId === id) { editPhoto.loading = false; renderEditPhoto(); }
+    }
+  }
+}
+function closeNoteEdit() {
+  noteEditId = null;
+  if (editPhoto.url) URL.revokeObjectURL(editPhoto.url);
+  editPhoto = { blob: null, url: '', changed: false, loading: false };
+  document.getElementById('noteEditModal').style.display = 'none';
+}
+async function saveNote() {
+  const r = histData.find(x => x.id === noteEditId);
+  if (r) {
+    r.note = document.getElementById('noteEditInput').value.trim();
+    if (editPhoto.changed) {
+      try {
+        if (editPhoto.blob) { await photoPut(r.id, editPhoto.blob); r.hasPhoto = true; }
+        else { await photoDel(r.id); r.hasPhoto = false; }
+      } catch (e) { alert('บันทึกรูปแนบไม่สำเร็จ'); }
+    }
+    saveToStorage();
+  }
+  closeNoteEdit();
+  renderHistory();
+}
+
+// --- รูปในหน้าประวัติ ---
+function loadHistPhotos() {
+  histUrls.forEach(u => URL.revokeObjectURL(u)); histUrls = [];
+  document.querySelectorAll('img[data-pid]').forEach(async img => {
+    try {
+      const b = await photoGet(Number(img.dataset.pid));
+      if (b && img.isConnected) { const u = URL.createObjectURL(b); histUrls.push(u); img.src = u; }
+    } catch (e) {}
+  });
+}
+async function viewPhoto(id) {
+  try {
+    const b = await photoGet(id); if (!b) return;
+    const v = document.getElementById('photoViewer');
+    v.dataset.u = URL.createObjectURL(b);
+    v.querySelector('img').src = v.dataset.u;
+    v.style.display = 'flex';
+  } catch (e) {}
+}
+function closePhotoViewer() {
+  const v = document.getElementById('photoViewer');
+  v.style.display = 'none';
+  if (v.dataset.u) URL.revokeObjectURL(v.dataset.u);
+  v.querySelector('img').removeAttribute('src');
+}
+
+// --- ชื่อบนสลิป ---
+function editShopName() {
+  const v = prompt('ชื่อร้านหรือชื่อเครื่อง (แสดงบนสลิป)', shopName);
+  if (v === null) return;
+  shopName = v.trim().slice(0, 30);
+  try { localStorage.setItem('qr_shop', shopName); } catch (e) {}
+  renderSettings();
+}
+
+// --- สร้างรูปสลิป ---
+function T(c, s, x, y, font, color, align) { c.font = font; c.fillStyle = color; c.textAlign = align || 'left'; c.fillText(s, x, y); }
+function wrapText(c, text, maxW) {
+  const seg = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('th', { granularity: 'word' }) : null;
+  const lines = [];
+  String(text).split('\n').forEach(par => {
+    const toks = seg ? Array.from(seg.segment(par), x => x.segment) : Array.from(par);
+    let line = '';
+    toks.forEach(tk => {
+      if (!line || c.measureText(line + tk).width <= maxW) line += tk;
+      else { lines.push(line.trimEnd()); line = tk.trimStart(); }
+    });
+    lines.push(line);
+  });
+  return lines;
+}
+function makeQRCanvas(text, size) {
+  const d = document.createElement('div');
+  new QRCode(d, { text, width: size, height: size, colorDark: '#1a56db', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  return d.querySelector('canvas');
+}
+async function buildSlip(r) {
+  try { await document.fonts.load('400 14px Sarabun'); await document.fonts.load('700 14px Sarabun'); } catch (e) {}
+  const F = 'Sarabun, sans-serif', S = 2, W = 360, P = 24, IW = W - P * 2;
+  let photo = null;
+  if (r.hasPhoto) { try { const b = await photoGet(r.id); if (b) photo = await blobToImg(b); } catch (e) {} }
+  const big = document.createElement('canvas'); big.width = W * S; big.height = 3000 * S;
+  const c = big.getContext('2d'); c.scale(S, S);
+  c.fillStyle = '#fff'; c.fillRect(0, 0, W, 3000);
+  c.fillStyle = '#1a56db'; c.fillRect(0, 0, W, 76);
+  T(c, 'จ่าย QR', P, 38, `700 22px ${F}`, '#fff');
+  if (shopName) T(c, shopName, P, 60, `400 14px ${F}`, '#cfe0ff');
+  T(c, 'สลิปรับเงิน', W - P, 38, `400 13px ${F}`, '#cfe0ff', 'right');
+  T(c, 'ยอดเงินที่รับ', W / 2, 112, `400 13px ${F}`, '#6b7280', 'center');
+  T(c, r.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 }) + ' บาท', W / 2, 152, `700 34px ${F}`, '#1a56db', 'center');
+  let y = 176;
+  const line = () => { c.fillStyle = '#e5e7eb'; c.fillRect(P, y, IW, 1); };
+  line(); y += 28;
+  [['เบอร์รับเงิน', fmt(r.phone)], ['วันที่', r.date], ['เวลา', r.time]].forEach(([k, v]) => {
+    T(c, k, P, y, `400 14px ${F}`, '#6b7280'); T(c, v, W - P, y, `600 15px ${F}`, '#1a1a2e', 'right'); y += 28;
+  });
+  y -= 8; line(); y += 22;
+  if (r.note) {
+    T(c, 'โน้ต', P, y, `400 13px ${F}`, '#6b7280'); y += 8;
+    c.font = `400 15px ${F}`;
+    const ls = wrapText(c, r.note, IW - 24), bh = ls.length * 22 + 14;
+    c.fillStyle = '#f1f5fd'; c.fillRect(P, y, IW, bh);
+    c.strokeStyle = '#cfdcf7'; c.lineWidth = 1; c.strokeRect(P + .5, y + .5, IW - 1, bh - 1);
+    ls.forEach((t, i) => T(c, t, P + 12, y + 24 + i * 22, `400 15px ${F}`, '#1a1a2e'));
+    y += bh + 22;
+  }
+  if (photo) {
+    T(c, 'รูปแนบ', P, y, `400 13px ${F}`, '#6b7280'); y += 8;
+    const k = Math.min(IW / photo.naturalWidth, 340 / photo.naturalHeight);
+    const dw = photo.naturalWidth * k, dh = photo.naturalHeight * k;
+    c.drawImage(photo, P + (IW - dw) / 2, y, dw, dh);
+    y += dh + 22;
+  }
+  if (SLIP_SHOW_QR) {
+    const qc = makeQRCanvas(buildPromptPayQR(r.phone, r.amount), 220);
+    if (qc) {
+      c.drawImage(qc, W / 2 - 55, y, 110, 110); y += 110;
+      T(c, 'QR ที่ใช้รับเงิน', W / 2, y + 18, `400 11px ${F}`, '#9ca3af', 'center'); y += 34;
+    }
+  }
+  y += 4; line(); y += 22;
+  T(c, 'รหัสรายการ ' + r.id, W / 2, y, `400 11px ${F}`, '#6b7280', 'center'); y += 20;
+  T(c, 'สร้างโดยแอปจ่าย QR', W / 2, y, `400 11px ${F}`, '#9ca3af', 'center'); y += 22;
+  const H = Math.ceil(y);
+  const out = document.createElement('canvas'); out.width = W * S; out.height = H * S;
+  out.getContext('2d').drawImage(big, 0, 0, W * S, H * S, 0, 0, W * S, H * S);
+  return new Promise(res => out.toBlob(res, 'image/png'));
+}
+async function saveSlip(id) {
+  const r = histData.find(x => x.id === id);
+  if (!r) return;
+  try {
+    const blob = await buildSlip(r), name = 'slip-' + r.id + '.png';
+    const file = new File([blob], name, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file] }); return; }
+      catch (e) { if (e.name === 'AbortError') return; }
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) { alert('สร้างรูปสลิปไม่สำเร็จ ลองอีกครั้ง'); }
 }
 
 // ─── START ────────────────────────────────────────────────
@@ -769,5 +1099,28 @@ init();
       </div>
     </div>
   </div>
+<!-- EDIT NOTE MODAL -->
+<div id="noteEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:24px">
+<div style="background:var(--card);border-radius:var(--radius);padding:24px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;animation:fadeIn 0.18s ease">
+<div style="font-size:20px;font-weight:800;text-align:center;color:var(--text);margin-bottom:6px">📝 โน้ตและรูปแนบ</div>
+<div style="font-size:14px;color:var(--text-muted);text-align:center;margin-bottom:14px" id="noteEditDesc"></div>
+<textarea class="note-field" id="noteEditInput" rows="3" maxlength="200" placeholder="พิมพ์บันทึกที่นี่..."></textarea>
+<div class="note-label">📷 รูปแนบ (ไม่บังคับ)</div>
+<div id="noteEditPhoto"></div>
+<div class="photo-row">
+<label class="photo-btn" for="editPhotoCam">📷 ถ่ายรูป</label>
+<label class="photo-btn" for="editPhotoFile">🖼️ เลือกรูป</label>
+</div>
+<input type="file" accept="image/*" capture="environment" id="editPhotoCam" class="file-hidden" onchange="onEditPhoto(this)">
+<input type="file" accept="image/*" id="editPhotoFile" class="file-hidden" onchange="onEditPhoto(this)">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+<button class="btn-outline" onclick="closeNoteEdit()">ยกเลิก</button>
+<button class="btn-red" style="background:var(--blue)" onclick="saveNote()">บันทึก</button>
+</div>
+</div>
+</div>
+
+<div id="photoViewer" class="photo-viewer" onclick="closePhotoViewer()"><img alt="รูปแนบ"></div>
+
 </body>
 </html>
